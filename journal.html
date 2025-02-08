@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Journal Entry</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 { text-align: center; }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      margin-top: 10px;
+    }
+    input[type="date"],
+    textarea {
+      padding: 8px;
+      font-size: 16px;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      font-size: 16px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #message {
+      margin-top: 10px;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Journal Entry</h1>
+    <form id="journalForm">
+      <label for="entryDate">Date:</label>
+      <input type="date" id="entryDate" required>
+      <label for="entryText">Your Journal:</label>
+      <textarea id="entryText" rows="10" placeholder="Write your journal for today..." required></textarea>
+      <button type="submit">Save Journal</button>
+    </form>
+    <div id="message"></div>
+  </div>
+  <script>
+    const journalForm = document.getElementById('journalForm');
+    journalForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const date = document.getElementById('entryDate').value;
+      const text = document.getElementById('entryText').value;
+      if (!date || !text) {
+        alert("Please fill out all fields.");
+        return;
+      }
+      // Ambil data jurnal yang sudah ada dari localStorage
+      let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+      // Simpan entri baru
+      journalEntries.push({ date, text });
+      localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
+      document.getElementById('message').innerText = "Journal saved successfully!";
+      journalForm.reset();
+    });
+  </script>
+</body>
+</html>
