@@ -1,19 +1,19 @@
 const nodemailer = require('nodemailer');
 const cron = require('node-cron');
 
-// Configure your email transporter. (This example uses Gmail; adjust settings as needed.)
+// Configure your email transporter (Gmail example)
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'amirahnufahaulya@students.ignatiusglobal.sch.id',
-    pass: 'KDIEPHRW' // Consider using environment variables for security.
+    pass: 'KDIEPHRW' // Not recommended to keep credentials in code—use environment variables ideally
   }
 });
 
 // Define the email message details
 const mailOptions = {
   from: 'amirahnufahaulya@students.ignatiusglobal.sch.id',
-  to: 'amirahna77@gmail.com', // or another email address
+  to: 'amirahna77@gmail.com', // or any other email
   subject: 'Daily Habit Tracker Update',
   text: 'Today, you completed all of your habits. Keep up the great work!'
 };
