@@ -90,7 +90,6 @@
   </div>
 
   <script>
-    // Simpan entri jurnal ke localStorage
     const journalForm = document.getElementById('journalForm');
     journalForm.addEventListener('submit', function(e) {
       e.preventDefault();
@@ -100,16 +99,26 @@
         alert("Please fill out all fields.");
         return;
       }
-      // Ambil entri yang sudah ada dari localStorage
-      let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
-      // Tambahkan entri baru ke array (disini tidak melakukan update jika tanggal sama)
-      journalEntries.push({ date, text });
-      localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
-      document.getElementById('message').innerText = "Journal saved successfully!";
-      journalForm.reset();
+      // Kirim data ke server menggunakan fetch
+      fetch('/saveJournal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ date, text })
+      })
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('message').innerText = data;
+        journalForm.reset();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('message').innerText = "Error saving journal.";
+      });
     });
 
-    // Toggle dan render history jurnal
+    // Tombol untuk menampilkan/menyembunyikan history jurnal
     document.getElementById('seeHistory').addEventListener('click', function() {
       const historyDiv = document.getElementById('journalHistory');
       if (historyDiv.style.display === "none") {
@@ -120,22 +129,31 @@
       }
     });
 
+    // Fungsi untuk mengambil dan merender history jurnal dari server (opsional)
+    // Di sini contoh mengambil data dari journal.json via fetch
     function renderHistory() {
-      const historyDiv = document.getElementById('journalHistory');
-      const journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
-      historyDiv.innerHTML = ""; // Bersihkan history yang lama
-      if (journalEntries.length === 0) {
-        historyDiv.innerHTML = "<p>No journal entries found.</p>";
-        return;
-      }
-      const ul = document.createElement('ul');
-      // Tampilkan entri terbaru di bagian atas dengan membalik urutan array
-      journalEntries.slice().reverse().forEach(entry => {
-        const li = document.createElement('li');
-        li.innerHTML = `<strong>${entry.date}</strong><br>${entry.text}`;
-        ul.appendChild(li);
-      });
-      historyDiv.appendChild(ul);
+      fetch('/journal.json')
+        .then(response => response.json())
+        .then(journalEntries => {
+          const historyDiv = document.getElementById('journalHistory');
+          historyDiv.innerHTML = ""; // Bersihkan konten lama
+          if (journalEntries.length === 0) {
+            historyDiv.innerHTML = "<p>No journal entries found.</p>";
+            return;
+          }
+          const ul = document.createElement('ul');
+          // Tampilkan entri terbaru di bagian atas
+          journalEntries.slice().reverse().forEach(entry => {
+            const li = document.createElement('li');
+            li.innerHTML = `<strong>${entry.date}</strong><br>${entry.text}`;
+            ul.appendChild(li);
+          });
+          historyDiv.appendChild(ul);
+        })
+        .catch(error => {
+          console.error('Error fetching journal history:', error);
+          document.getElementById('journalHistory').innerText = "Error loading history.";
+        });
     }
   </script>
 </body>
