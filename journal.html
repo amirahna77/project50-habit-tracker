@@ -50,21 +50,47 @@
       font-weight: bold;
       text-align: center;
     }
+    #journalHistory {
+      margin-top: 20px;
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+    }
+    #journalHistory ul {
+      list-style: none;
+      padding: 0;
+    }
+    #journalHistory li {
+      margin-bottom: 10px;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Journal Entry</h1>
+    <!-- Form untuk memasukkan entri jurnal -->
     <form id="journalForm">
       <label for="entryDate">Date:</label>
       <input type="date" id="entryDate" required>
       <label for="entryText">Your Journal:</label>
-      <textarea id="entryText" rows="10" placeholder="Write your journal for today..." required></textarea>
+      <textarea id="entryText" rows="5" placeholder="Write your journal for today..." required></textarea>
       <button type="submit">Save Journal</button>
     </form>
     <div id="message"></div>
+    
+    <!-- Tombol untuk menampilkan/menyembunyikan history entri jurnal -->
+    <button id="seeHistory">See History</button>
+    
+    <!-- Tempat untuk menampilkan daftar entri jurnal -->
+    <div id="journalHistory" style="display: none;">
+      <!-- History akan dirender di sini -->
+    </div>
   </div>
+
   <script>
+    // Simpan entri jurnal ke localStorage
     const journalForm = document.getElementById('journalForm');
     journalForm.addEventListener('submit', function(e) {
       e.preventDefault();
@@ -74,14 +100,44 @@
         alert("Please fill out all fields.");
         return;
       }
-      // Ambil data jurnal yang sudah ada dari localStorage
+      // Ambil entri yang sudah ada dari localStorage
       let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
-      // Simpan entri baru
+      // Tambahkan entri baru ke array (disini tidak melakukan update jika tanggal sama)
       journalEntries.push({ date, text });
       localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
       document.getElementById('message').innerText = "Journal saved successfully!";
       journalForm.reset();
     });
+
+    // Toggle dan render history jurnal
+    document.getElementById('seeHistory').addEventListener('click', function() {
+      const historyDiv = document.getElementById('journalHistory');
+      if (historyDiv.style.display === "none") {
+        historyDiv.style.display = "block";
+        renderHistory();
+      } else {
+        historyDiv.style.display = "none";
+      }
+    });
+
+    function renderHistory() {
+      const historyDiv = document.getElementById('journalHistory');
+      const journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+      historyDiv.innerHTML = ""; // Bersihkan history yang lama
+      if (journalEntries.length === 0) {
+        historyDiv.innerHTML = "<p>No journal entries found.</p>";
+        return;
+      }
+      const ul = document.createElement('ul');
+      // Tampilkan entri terbaru di bagian atas dengan membalik urutan array
+      journalEntries.slice().reverse().forEach(entry => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${entry.date}</strong><br>${entry.text}`;
+        ul.appendChild(li);
+      });
+      historyDiv.appendChild(ul);
+    }
   </script>
 </body>
 </html>
+
