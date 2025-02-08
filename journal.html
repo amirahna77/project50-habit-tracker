@@ -129,142 +129,141 @@
   <!-- Sertakan library Sentiment.js -->
   <script src="https://cdn.jsdelivr.net/npm/sentiment@5.0.2/build/sentiment.min.js"></script>
   <script>
-    // Inisialisasi Sentiment Analyzer
-    const sentimentAnalyzer = new Sentiment();
-
-    // Fungsi untuk mengonversi score menjadi label dan alternatif emosi
-    function getEmotion(resultScore) {
-      let mainEmotion = "";
-      let alternatives = [];
-      if (resultScore >= 3) {
-        mainEmotion = "Very Positive";
-        alternatives = ["Happy", "Cheerful", "Joyful", "Optimistic"];
-      } else if (resultScore === 2) {
-        mainEmotion = "Positive";
-        alternatives = ["Content", "Satisfied", "Pleasant"];
-      } else if (resultScore === 1) {
-        mainEmotion = "Slightly Positive";
-        alternatives = ["Calm", "Relaxed", "Mildly Happy"];
-      } else if (resultScore === 0) {
-        mainEmotion = "Neutral";
-        alternatives = ["Balanced", "Indifferent", "Calm"];
-      } else if (resultScore === -1) {
-        mainEmotion = "Slightly Negative";
-        alternatives = ["Mildly Sad", "Disappointed", "Down"];
-      } else if (resultScore <= -2) {
-        mainEmotion = "Negative";
-        alternatives = ["Sad", "Angry", "Melancholic", "Frustrated"];
-      }
-      return { mainEmotion, alternatives };
-    }
-
-    // Fungsi untuk me-render history jurnal (termasuk sentiment analysis)
-    function renderHistory() {
-      const journalList = document.getElementById('journalList');
-      let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
-      journalList.innerHTML = ""; // Bersihkan daftar sebelumnya
-
-      journalEntries.forEach((entry, index) => {
-        // Lakukan analisis sentiment terhadap teks entri
-        const result = sentimentAnalyzer.analyze(entry.text);
-        const { mainEmotion, alternatives } = getEmotion(result.score);
-
-        // Buat elemen list untuk entri
-        const li = document.createElement('li');
-
-        // Header untuk entri (Day X: date - Detected Emotion)
-        const headerDiv = document.createElement('div');
-        headerDiv.className = 'entry-header';
-        const dayInfo = document.createElement('span');
-        dayInfo.innerText = `Day ${index + 1}: ${entry.date} - ${mainEmotion}`;
-        headerDiv.appendChild(dayInfo);
-
-        // Tombol untuk toggle detail sentiment (nilai score dan alternatif emosi)
-        const toggleSentimentBtn = document.createElement('button');
-        toggleSentimentBtn.innerText = "Show Sentiment";
-        toggleSentimentBtn.className = "toggle-sentiment-btn";
-        headerDiv.appendChild(toggleSentimentBtn);
-
-        // Div untuk detail sentiment, awalnya disembunyikan
-        const sentimentDetailsDiv = document.createElement('div');
-        sentimentDetailsDiv.className = "sentiment-details";
-        sentimentDetailsDiv.innerHTML = `<em>Sentiment Score:</em> ${result.score}. <em>Alternatives:</em> ${alternatives.join(", ")}`;
-
-        // Event toggle untuk detail sentiment
-        toggleSentimentBtn.addEventListener('click', function() {
-          if (sentimentDetailsDiv.style.display === "none") {
-            sentimentDetailsDiv.style.display = "block";
-            toggleSentimentBtn.innerText = "Hide Sentiment";
-          } else {
-            sentimentDetailsDiv.style.display = "none";
-            toggleSentimentBtn.innerText = "Show Sentiment";
-          }
-        });
-
-        // Tombol delete untuk menghapus entri
-        const deleteButton = document.createElement('button');
-        deleteButton.innerText = "Delete";
-        deleteButton.className = "delete-btn";
-        deleteButton.addEventListener('click', function() {
-          deleteEntry(index);
-        });
-
-        // Gabungkan semua elemen ke dalam list item
-        li.appendChild(headerDiv);
-        li.appendChild(sentimentDetailsDiv);
-        li.appendChild(deleteButton);
-        journalList.appendChild(li);
-      });
-    }
-
-    // Fungsi untuk menghapus entri berdasarkan indeks
-    function deleteEntry(index) {
-      let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
-      journalEntries.splice(index, 1);
-      localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
-      renderHistory();
-    }
-
-    // Simpan entri jurnal ketika form disubmit
-    const journalForm = document.getElementById('journalForm');
-    const messageDiv = document.getElementById('message');
-
-    journalForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const date = document.getElementById('entryDate').value;
-      const text = document.getElementById('entryText').value;
-      if (!date || !text) {
-        alert("Please fill out all fields.");
-        return;
-      }
-      // Ambil data entri yang sudah ada atau buat array baru
-      let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
-      journalEntries.push({ date, text });
-      localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
-      messageDiv.innerText = "Journal saved successfully!";
-      journalForm.reset();
-      renderHistory();
-    });
-
-    // Toggle untuk keseluruhan Journal History
-    const toggleHistoryButton = document.getElementById('toggleHistory');
-    const journalHistoryDiv = document.getElementById('journalHistory');
-    toggleHistoryButton.addEventListener('click', function() {
-      if (journalHistoryDiv.style.display === "none") {
-        journalHistoryDiv.style.display = "block";
-        toggleHistoryButton.innerText = "Hide Journal History";
-        renderHistory();
-      } else {
-        journalHistoryDiv.style.display = "none";
-        toggleHistoryButton.innerText = "See Journal History";
-      }
-    });
-
-    // Render history saat halaman pertama kali dimuat
     document.addEventListener('DOMContentLoaded', function() {
+      // Inisialisasi Sentiment Analyzer
+      const sentimentAnalyzer = new Sentiment();
+
+      // Fungsi untuk mengonversi score menjadi label dan alternatif emosi
+      function getEmotion(resultScore) {
+        let mainEmotion = "";
+        let alternatives = [];
+        if (resultScore >= 3) {
+          mainEmotion = "Very Positive";
+          alternatives = ["Happy", "Cheerful", "Joyful", "Optimistic"];
+        } else if (resultScore === 2) {
+          mainEmotion = "Positive";
+          alternatives = ["Content", "Satisfied", "Pleasant"];
+        } else if (resultScore === 1) {
+          mainEmotion = "Slightly Positive";
+          alternatives = ["Calm", "Relaxed", "Mildly Happy"];
+        } else if (resultScore === 0) {
+          mainEmotion = "Neutral";
+          alternatives = ["Balanced", "Indifferent", "Calm"];
+        } else if (resultScore === -1) {
+          mainEmotion = "Slightly Negative";
+          alternatives = ["Mildly Sad", "Disappointed", "Down"];
+        } else if (resultScore <= -2) {
+          mainEmotion = "Negative";
+          alternatives = ["Sad", "Angry", "Melancholic", "Frustrated"];
+        }
+        return { mainEmotion, alternatives };
+      }
+
+      // Fungsi untuk me-render history jurnal (termasuk sentiment analysis)
+      function renderHistory() {
+        const journalList = document.getElementById('journalList');
+        let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+        journalList.innerHTML = ""; // Bersihkan daftar sebelumnya
+
+        journalEntries.forEach((entry, index) => {
+          // Lakukan analisis sentiment terhadap teks entri
+          const result = sentimentAnalyzer.analyze(entry.text);
+          const { mainEmotion, alternatives } = getEmotion(result.score);
+
+          // Buat elemen list untuk entri
+          const li = document.createElement('li');
+
+          // Header untuk entri (Day X: date - Detected Emotion)
+          const headerDiv = document.createElement('div');
+          headerDiv.className = 'entry-header';
+          const dayInfo = document.createElement('span');
+          dayInfo.innerText = `Day ${index + 1}: ${entry.date} - ${mainEmotion}`;
+          headerDiv.appendChild(dayInfo);
+
+          // Tombol untuk toggle detail sentiment (nilai score dan alternatif emosi)
+          const toggleSentimentBtn = document.createElement('button');
+          toggleSentimentBtn.innerText = "Show Sentiment";
+          toggleSentimentBtn.className = "toggle-sentiment-btn";
+          headerDiv.appendChild(toggleSentimentBtn);
+
+          // Div untuk detail sentiment, awalnya disembunyikan
+          const sentimentDetailsDiv = document.createElement('div');
+          sentimentDetailsDiv.className = "sentiment-details";
+          sentimentDetailsDiv.innerHTML = `<em>Sentiment Score:</em> ${result.score}. <em>Alternatives:</em> ${alternatives.join(", ")}`;
+
+          // Event toggle untuk detail sentiment
+          toggleSentimentBtn.addEventListener('click', function() {
+            if (sentimentDetailsDiv.style.display === "none" || sentimentDetailsDiv.style.display === "") {
+              sentimentDetailsDiv.style.display = "block";
+              toggleSentimentBtn.innerText = "Hide Sentiment";
+            } else {
+              sentimentDetailsDiv.style.display = "none";
+              toggleSentimentBtn.innerText = "Show Sentiment";
+            }
+          });
+
+          // Tombol delete untuk menghapus entri
+          const deleteButton = document.createElement('button');
+          deleteButton.innerText = "Delete";
+          deleteButton.className = "delete-btn";
+          deleteButton.addEventListener('click', function() {
+            deleteEntry(index);
+          });
+
+          // Gabungkan semua elemen ke dalam list item
+          li.appendChild(headerDiv);
+          li.appendChild(sentimentDetailsDiv);
+          li.appendChild(deleteButton);
+          journalList.appendChild(li);
+        });
+      }
+
+      // Fungsi untuk menghapus entri berdasarkan indeks
+      function deleteEntry(index) {
+        let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+        journalEntries.splice(index, 1);
+        localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
+        renderHistory();
+      }
+
+      // Simpan entri jurnal ketika form disubmit
+      const journalForm = document.getElementById('journalForm');
+      const messageDiv = document.getElementById('message');
+
+      journalForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const date = document.getElementById('entryDate').value;
+        const text = document.getElementById('entryText').value;
+        if (!date || !text) {
+          alert("Please fill out all fields.");
+          return;
+        }
+        let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+        journalEntries.push({ date, text });
+        localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
+        messageDiv.innerText = "Journal saved successfully!";
+        journalForm.reset();
+        renderHistory();
+      });
+
+      // Pendaftaran event listener untuk tombol toggle Journal History
+      const toggleHistoryButton = document.getElementById('toggleHistory');
+      const journalHistoryDiv = document.getElementById('journalHistory');
+
+      toggleHistoryButton.addEventListener('click', function() {
+        if (journalHistoryDiv.style.display === "none" || journalHistoryDiv.style.display === "") {
+          journalHistoryDiv.style.display = "block";
+          toggleHistoryButton.innerText = "Hide Journal History";
+          renderHistory();
+        } else {
+          journalHistoryDiv.style.display = "none";
+          toggleHistoryButton.innerText = "See Journal History";
+        }
+      });
+
+      // Inisialisasi tampilan history saat pertama kali dimuat
       journalHistoryDiv.style.display = "none";
       toggleHistoryButton.innerText = "See Journal History";
-      renderHistory();
     });
   </script>
 </body>
