@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project 50 - Progress</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 { text-align: center; }
+    .dayRating {
+      margin: 10px 0;
+    }
+    .bar {
+      height: 20px;
+      background: #007bff;
+      border-radius: 4px;
+      transition: width 0.5s;
+    }
+    .ratingText {
+      font-size: 14px;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Progress</h1>
+    <div id="progressContainer"></div>
+  </div>
+  <script>
+    // Define weight for each habit (the property names match those in your habitData)
+    const weights = {
+      wakeUp: 0.5,
+      shower: 0.5,
+      prayer: 1.5,
+      toDo: 0.5,
+      read: 1.5,
+      omad: 2.0,
+      water: 1.5,
+      noDistractions: 2.0,
+      study: 2.0,
+      journal: 0.5
+    };
+
+    const maxRawScore = 12.5; // Sum of weights if all tasks are done.
+    const scaleFactor = 10 / maxRawScore; // Multiply raw score by this factor.
+
+    // Load habitData from localStorage
+    let habitData = JSON.parse(localStorage.getItem('habitData')) || [];
+
+    const progressContainer = document.getElementById('progressContainer');
+
+    // For each day that has data, compute the raw score.
+    habitData.forEach(dayData => {
+      // Only process days with a set date (i.e. days you’ve worked on)
+      if (!dayData.date) return;
+
+      let rawScore = 0;
+      // Sum weighted scores if the task was completed (true)
+      for (const key in weights) {
+        if (dayData[key]) {
+          rawScore += weights[key];
+        }
+      }
+      // Convert to 10-point scale.
+      let finalScore = (rawScore * scaleFactor).toFixed(1);
+
+      // Create an element to display the day's rating.
+      const dayDiv = document.createElement('div');
+      dayDiv.classList.add('dayRating');
+      dayDiv.innerHTML = `<strong>Day ${dayData.day} (${dayData.date}): ${finalScore}/10</strong>
+        <div class="bar" style="width: ${finalScore * 10}%;"></div>
+        <div class="ratingText">Raw Score: ${rawScore.toFixed(1)} / ${maxRawScore}</div>`;
+      progressContainer.appendChild(dayDiv);
+    });
+  </script>
+</body>
+</html>
