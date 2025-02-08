@@ -18,7 +18,9 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    h1 { text-align: center; }
+    h1, h2 { 
+      text-align: center; 
+    }
     form {
       display: flex;
       flex-direction: column;
@@ -52,7 +54,6 @@
     }
     #journalHistory {
       margin-top: 20px;
-      border-top: 1px solid #ccc;
       padding-top: 10px;
     }
     #journalHistory ul {
@@ -60,37 +61,95 @@
       padding: 0;
     }
     #journalHistory li {
-      margin-bottom: 10px;
       background: #f9f9f9;
+      margin-bottom: 10px;
       padding: 10px;
       border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .entry-details {
+      flex-grow: 1;
+      margin-left: 10px;
+    }
+    .delete-btn {
+      background: #dc3545;
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background: #c82333;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Journal Entry</h1>
-    <!-- Form untuk memasukkan entri jurnal -->
     <form id="journalForm">
       <label for="entryDate">Date:</label>
       <input type="date" id="entryDate" required>
       <label for="entryText">Your Journal:</label>
-      <textarea id="entryText" rows="5" placeholder="Write your journal for today..." required></textarea>
+      <textarea id="entryText" rows="10" placeholder="Write your journal for today..." required></textarea>
       <button type="submit">Save Journal</button>
     </form>
     <div id="message"></div>
     
-    <!-- Tombol untuk menampilkan/menyembunyikan history entri jurnal -->
-    <button id="seeHistory">See History</button>
-    
-    <!-- Tempat untuk menampilkan daftar entri jurnal -->
-    <div id="journalHistory" style="display: none;">
-      <!-- History akan dirender di sini -->
+    <!-- History jurnal -->
+    <div id="journalHistory">
+      <h2>Journal History</h2>
+      <ul id="journalList"></ul>
     </div>
   </div>
-
   <script>
     const journalForm = document.getElementById('journalForm');
+    const messageDiv = document.getElementById('message');
+    const journalList = document.getElementById('journalList');
+
+    // Fungsi untuk menampilkan history jurnal
+    function renderHistory() {
+      let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+      journalList.innerHTML = ""; // Bersihkan daftar sebelumnya
+
+      journalEntries.forEach((entry, index) => {
+        const li = document.createElement('li');
+        
+        // Label Day
+        const dayLabel = document.createElement('span');
+        dayLabel.innerText = `Day ${index + 1} -`;
+        
+        // Detail entri: tanggal dan teks
+        const entryDetails = document.createElement('span');
+        entryDetails.className = 'entry-details';
+        entryDetails.innerHTML = `<strong>${entry.date}</strong>: ${entry.text}`;
+        
+        // Tombol delete
+        const deleteButton = document.createElement('button');
+        deleteButton.innerText = "Delete";
+        deleteButton.className = 'delete-btn';
+        deleteButton.addEventListener('click', function() {
+          deleteEntry(index);
+        });
+        
+        li.appendChild(dayLabel);
+        li.appendChild(entryDetails);
+        li.appendChild(deleteButton);
+        journalList.appendChild(li);
+      });
+    }
+
+    // Fungsi untuk menghapus entri jurnal berdasarkan indeks
+    function deleteEntry(index) {
+      let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+      journalEntries.splice(index, 1);
+      localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
+      renderHistory();
+    }
+
+    // Simpan entri jurnal saat form disubmit
     journalForm.addEventListener('submit', function(e) {
       e.preventDefault();
       const date = document.getElementById('entryDate').value;
@@ -99,63 +158,17 @@
         alert("Please fill out all fields.");
         return;
       }
-      // Kirim data ke server menggunakan fetch
-      fetch('/saveJournal', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ date, text })
-      })
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('message').innerText = data;
-        journalForm.reset();
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('message').innerText = "Error saving journal.";
-      });
+      // Ambil entri yang sudah ada atau buat array baru
+      let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+      journalEntries.push({ date, text });
+      localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
+      messageDiv.innerText = "Journal saved successfully!";
+      journalForm.reset();
+      renderHistory();
     });
 
-    // Tombol untuk menampilkan/menyembunyikan history jurnal
-    document.getElementById('seeHistory').addEventListener('click', function() {
-      const historyDiv = document.getElementById('journalHistory');
-      if (historyDiv.style.display === "none") {
-        historyDiv.style.display = "block";
-        renderHistory();
-      } else {
-        historyDiv.style.display = "none";
-      }
-    });
-
-    // Fungsi untuk mengambil dan merender history jurnal dari server (opsional)
-    // Di sini contoh mengambil data dari journal.json via fetch
-    function renderHistory() {
-      fetch('/journal.json')
-        .then(response => response.json())
-        .then(journalEntries => {
-          const historyDiv = document.getElementById('journalHistory');
-          historyDiv.innerHTML = ""; // Bersihkan konten lama
-          if (journalEntries.length === 0) {
-            historyDiv.innerHTML = "<p>No journal entries found.</p>";
-            return;
-          }
-          const ul = document.createElement('ul');
-          // Tampilkan entri terbaru di bagian atas
-          journalEntries.slice().reverse().forEach(entry => {
-            const li = document.createElement('li');
-            li.innerHTML = `<strong>${entry.date}</strong><br>${entry.text}`;
-            ul.appendChild(li);
-          });
-          historyDiv.appendChild(ul);
-        })
-        .catch(error => {
-          console.error('Error fetching journal history:', error);
-          document.getElementById('journalHistory').innerText = "Error loading history.";
-        });
-    }
+    // Render history saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', renderHistory);
   </script>
 </body>
 </html>
-
